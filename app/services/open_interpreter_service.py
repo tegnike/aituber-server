@@ -6,8 +6,8 @@ import interpreter
 from datetime import datetime
 from .websocket_service import send_websocket_message
 
-async def stream_open_interpreter(websocket, waiting_start_time):
-    language = "japanese"
+async def stream_open_interpreter(websocket):
+    language = os.getenv('LANGUAGE') or "japanese"
 
     try:
         # 1日の記憶を保持する
@@ -81,7 +81,6 @@ Your workspace is `./workspace` folder. If you make an output file, please put i
 
                 # OpenInterpreterの結果をstreamモードで取得、chunk毎に処理
                 is_source_code = False
-                print(message_content)
                 for chunk in interpreter.chat(message_content, display=True, stream=True):
                     current_type = list(chunk.keys())[0]
                     if current_type != "language" and current_type != "active_line" and current_type != "end_of_execution":
@@ -128,12 +127,6 @@ Your workspace is `./workspace` folder. If you make an output file, please put i
                 saved_file = f"{directory}/{file_name}にファイルを保存しました。" if language == 'japanese' else f"Saved file to {directory}/{file_name}."
                 save_message = "ファイルを保存しました。" if language == 'japanese' else f"Saved file."
                 await send_websocket_message(websocket, save_message, "assistant")
-
-            # WebSocketで発話処理の終了を受け取った場合
-            elif message_type == "finish_speak":
-                info_message = "フロントの発話処理が終了しました。" if language == 'japanese' else "The front speech processing has been completed."
-                print(info_message)
-                await waiting_start_time.put(datetime.utcnow())
 
             # WebSocketで未設定のメッセージを受け取った場合
             else:
