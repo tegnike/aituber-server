@@ -1,4 +1,5 @@
 # 美少女OPInterpreter 公開用
+[English version](./en_README.md)
 
 ## できること
 
