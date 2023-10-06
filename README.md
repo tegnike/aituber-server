@@ -24,9 +24,13 @@
 
 ## コード解説
 
-長くなるので[こちら（【コード解説】美少女OPInterpreter簡易版）]に記載しました。
+長くなるので下記に記載しました。
+
+- [【コード解説】美少女OPInterpreter簡易版](https://note.com/nike_cha_n/n/n39f62ee846e3)
 
 ## その他
 
 1. ライセンスは[KillianLucas/open-interpreter](https://github.com/KillianLucas/open-interpreter)に準拠します。
-2. Open Interpreterの使用方法は[こちら（【開発者向け】Open Interpreterの使い方をコード付きで説明する（python編））](https://note.com/nike_cha_n/n/n764514cf5351)にまとめています。
+2. Open Interpreterの使用方法は下記にまとめています。
+
+- [【開発者向け】Open Interpreterの使い方をコード付きで説明する（python編）](https://note.com/nike_cha_n/n/n764514cf5351)
