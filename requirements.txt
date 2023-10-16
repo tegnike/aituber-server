@@ -3,10 +3,11 @@ easyocr
 fastapi
 ffmpeg-python
 google-api-python-client
-litellm==0.1.674
+litellm
 matplotlib
 mplfinance
 numpy
+open-interpreter==0.1.7
 openai
 opencv-python
 pandas
@@ -14,6 +15,7 @@ pandas-datareader
 pdfkit
 ptvsd
 pytest
+python-dotenv
 pydub
 PyMuPDF
 pyocr
@@ -27,4 +29,3 @@ watchdog
 weasyprint
 websockets
 yfinance
-python-dotenv

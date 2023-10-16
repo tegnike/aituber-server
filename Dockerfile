@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.11-buster
+FROM python:3.11-bookworm
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -11,7 +11,6 @@ WORKDIR /app
 # Install dependencies
 COPY requirements.txt /app/
 RUN pip install --upgrade pip && pip install -r requirements.txt
-RUN pip install open-interpreter
 
 # Copy project
 COPY . /app/
