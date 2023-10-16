@@ -86,7 +86,7 @@ Your workspace is `./workspace` folder. If you make an output file, please put i
                     exculde_types = ["language", "active_line", "end_of_execution", "start_of_message", "end_of_message", "start_of_code", "end_of_code"]
                     if current_type not in exculde_types:
                         # message typeの場合は、文節に区切ってメッセージを送信
-                        if current_type != prev_type or (len(message) > 15 and message[-1] in ['。', '！', '？', '；', '…', '：'] or message[-1] == "\n"):
+                        if current_type != prev_type or (len(message) > 15 and message[-1] in ['、', '。', '！', '？', '；', '…', '：'] or message[-1] == "\n"):
                             if message != "":
                                 if "```" in message:
                                     # Toggle is_source_code
