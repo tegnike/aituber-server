@@ -6,6 +6,10 @@
 - (16/10/2023) I'm currently pinned to version 0.1.7 of Open Interpreter due to an error in the latest version (0.1.9) that prevents WebSocket from sending in chunks.
 - (16/10/2023) I changed repository name from "nike-open-intepreter" to "nike-open-interpreter" because of misspelling.
 
+## Relation
+
+- Front-side repository -> [tegnike/nike-ChatVRM](https://github.com/tegnike/nike-ChatVRM)
+
 ## Features
 
 1. You can receive messages via WebSocket and obtain responses from the Open Interpreter (supports stream mode).

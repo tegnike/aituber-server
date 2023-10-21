@@ -6,6 +6,10 @@
 - (2023/10/16) Open Interpreterの最新のバージョン（0.1.9）で、WebSocketがchunk毎に送信できないエラーが発生したので、一旦0.1.7で固定しています。
 - (2023/10/16) リポジトリ名のスペルが誤っていたので修正しました。"nike-open-intepreter" => "nike-open-interpreter"
 
+## 関連
+
+- フロントサイドリポジトリ -> [tegnike/nike-ChatVRM](https://github.com/tegnike/nike-ChatVRM)
+
 ## できること
 
 1. WebSocketでメッセージを受け取って、Open Interpreterからレスポンスを取得することができます（streamモード対応）。
