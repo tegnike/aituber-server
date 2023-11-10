@@ -5,6 +5,7 @@
 
 - (2023/10/16) Open Interpreterの最新のバージョン（0.1.9）で、WebSocketがchunk毎に送信できないエラーが発生したので、一旦0.1.7で固定しています。
 - (2023/10/16) リポジトリ名のスペルが誤っていたので修正しました。"nike-open-intepreter" => "nike-open-interpreter"
+- (2023/11/11) Open Interpreterの最新のバージョン（0.1.13）で、WebSocketエラーが解消していたことを確認したので、バージョンの固定を解除しました。
 
 ## 関連
 

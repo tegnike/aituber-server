@@ -5,6 +5,7 @@
 
 - (16/10/2023) I'm currently pinned to version 0.1.7 of Open Interpreter due to an error in the latest version (0.1.9) that prevents WebSocket from sending in chunks.
 - (16/10/2023) I changed repository name from "nike-open-intepreter" to "nike-open-interpreter" because of misspelling.
+- (11/11/2023) I removed version 0.1.7 pinned of Open Interpreter because I could check it works correctly in the latest version (0.1.13).
 
 ## Relation
 
