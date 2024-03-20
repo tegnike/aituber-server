@@ -2,7 +2,7 @@ import os
 import json
 import base64
 import traceback
-import interpreter
+from interpreter import interpreter
 from datetime import datetime
 from .websocket_service import send_websocket_message
 
@@ -24,6 +24,7 @@ async def stream_open_interpreter(websocket):
                 json.dump([], f)
             print("Created conversation history.")
 
+        interpreter.model = "gpt-4-turbo"
         interpreter.auto_run = True
         # interpreter.debug_mode = True
         interpreter.system_message = f"""
@@ -82,11 +83,11 @@ Your workspace is `./workspace` folder. If you make an output file, please put i
                 # OpenInterpreterの結果をstreamモードで取得、chunk毎に処理
                 is_source_code = False
                 for chunk in interpreter.chat(message_content, display=True, stream=True):
-                    current_type = list(chunk.keys())[0]
+                    current_type = chunk["type"]
                     exculde_types = ["language", "active_line", "end_of_execution", "start_of_message", "end_of_message", "start_of_code", "end_of_code"]
                     if current_type not in exculde_types:
                         # message typeの場合は、文節に区切ってメッセージを送信
-                        if current_type != prev_type or (len(message) > 15 and message[-1] in ['、', '。', '！', '？', '；', '…', '：'] or message[-1] == "\n"):
+                        if message and (current_type != prev_type or (len(message) > 15 and message[-1] in ['、', '。', '！', '？', '；', '…', '：'] or message[-1] == "\n")):
                             if message != "":
                                 if "```" in message:
                                     # Toggle is_source_code
@@ -97,9 +98,17 @@ Your workspace is `./workspace` folder. If you make an output file, please put i
                             message = ""
 
                         if current_type == "executing":
-                            message += f"{chunk['executing']['code']}\n\n========================\nrunning...\n========================"
+                            message += f"{chunk['content']}\n\n========================\nrunning...\n========================"
                         else:
-                            message += chunk[current_type]
+                            try:
+                                if isinstance(chunk["content"], dict):
+                                    await send_websocket_message(websocket, chunk["content"]["content"], type_)
+                                elif isinstance(chunk["content"], str):
+                                    message += chunk["content"]
+                                else:
+                                    pass
+                            except KeyError:
+                                pass
                         prev_type = current_type
 
             # WebSocketでファイルを受け取った場合

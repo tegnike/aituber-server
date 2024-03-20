@@ -7,7 +7,7 @@ litellm
 matplotlib
 mplfinance
 numpy
-open-interpreter
+open-interpreter==0.2.2
 openai
 opencv-python
 pandas
