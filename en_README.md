@@ -1,5 +1,6 @@
 # Beautiful Girl OpenInterpreter
-[Japanese version](./README.md)
+
+[ [Japanese version](./README.md) | [English version](./en_README.md) | [简体中文](./zh_README.md) ]
 
 ## Note
 

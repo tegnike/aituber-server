@@ -1,5 +1,6 @@
 # 美少女OPInterpreter サーバーサイド 公開用
-[English version](./en_README.md)
+
+[ [Japanese version](./README.md) | [English version](./en_README.md) | [简体中文版本](./zh_README.md) ]
 
 ## 注意
 
