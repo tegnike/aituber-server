@@ -1,15 +1,15 @@
-# Beautiful Girl OpenInterpreter
+# AITuberKit Server Side
 [Japanese version](./README.md)
 
 ## Note
 
-- (16/10/2023) I'm currently pinned to version 0.1.7 of Open Interpreter due to an error in the latest version (0.1.9) that prevents WebSocket from sending in chunks.
-- (16/10/2023) I changed repository name from "nike-open-intepreter" to "nike-open-interpreter" because of misspelling.
-- (11/11/2023) I removed version 0.1.7 pinned of Open Interpreter because I could check it works correctly in the latest version (0.1.13).
+- There are currently no plans for future maintenance.
+- All library versions, including OpenInterpreter, are fixed (the latest as of 20/08/24 is 0.3.7)
 
 ## Relation
 
-- Front-side repository -> [tegnike/nike-ChatVRM](https://github.com/tegnike/nike-ChatVRM)
+- Front-side repository -> [tegnike/aituber-kit](https://github.com/tegnike/aituber-kit)
+- Explanatory article -> [Let's develop with a beautiful girl!! [Open Interpreter]](https://note.com/nike_cha_n/n/nabcfeb7aaf3f)
 
 ## Features
 
@@ -37,11 +37,11 @@ Reference: [VS Code Editor Introduction](https://zenn.dev/karaage0703/books/80b6
 
 It's lengthy, so I've detailed it in the link below:
 
-- https://note.com/nike_cha_n/n/n39f62ee846e3
+- [Code Explanation: Simple Version of Beautiful Girl OPInterpreter](https://note.com/nike_cha_n/n/n39f62ee846e3)
 
 ## Miscellaneous
 
 1. The license conforms to [KillianLucas/open-interpreter](https://github.com/KillianLucas/open-interpreter).
 2. Instructions on using the Open Interpreter are consolidated in the link below:
 
-- https://note.com/nike_cha_n/n/n764514cf5351
+- [For Developers: Explaining How to Use Open Interpreter with Code (Python Edition)](https://note.com/nike_cha_n/n/n764514cf5351)
