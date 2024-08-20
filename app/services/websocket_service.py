@@ -1,5 +1,6 @@
 import json
-import base64
+import asyncio
+
 
 async def send_websocket_message(websocket, message, type):
     # type別にrole変数に値を設定
@@ -9,6 +10,7 @@ async def send_websocket_message(websocket, message, type):
         json_data = json.dumps({"role": role, "text": message}, ensure_ascii=False)
         print(f"Sending message: {json_data}")
         await websocket.send({"type": "websocket.send", "text": json_data})
-        print(f"Send cmplete.")
+        await asyncio.sleep(0.01)  # 10ミリ秒の遅延を追加
+        print("Send complete.")
     else:
         print("Can't send message, WebSocket connection is closed.")
