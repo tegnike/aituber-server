@@ -24,7 +24,7 @@ async def stream_open_interpreter(websocket):
                 json.dump([], f)
             print("Created conversation history.")
 
-        interpreter.model = "gpt-4-turbo"
+        interpreter.model = "gpt-4o"
         interpreter.auto_run = True
         # interpreter.debug_mode = True
         interpreter.system_message = f"""
@@ -80,6 +80,9 @@ Your workspace is `./workspace` folder. If you make an output file, please put i
                     user_message = saved_file + user_message
                     saved_file = ""
 
+                # 処理開始時に"start"を送信
+                await send_websocket_message(websocket, "", "assistant", "start")
+
                 # OpenInterpreterの結果をstreamモードで取得、chunk毎に処理
                 is_source_code = False
                 for chunk in interpreter.chat(message_content, display=True, stream=True):
@@ -111,6 +114,9 @@ Your workspace is `./workspace` folder. If you make an output file, please put i
                                 pass
                         prev_type = current_type
 
+                # 処理終了時に"end"を送信
+                await send_websocket_message(websocket, "", "assistant", "end")
+
             # WebSocketでファイルを受け取った場合
             # ex. {"type": "file", "fileName": "sample.txt", "fileData": "data:;base64,SGVsbG8sIHdvcmxkIQ=="}
             elif message_type == "file":
@@ -133,15 +139,27 @@ Your workspace is `./workspace` folder. If you make an output file, please put i
                 with open(file_path, "wb") as f:
                     f.write(file_data)
 
+                # 処理開始時に"start"を送信
+                await send_websocket_message(websocket, "", "assistant", "start")
+
                 # メッセージを追加
                 saved_file = f"{directory}/{file_name}にファイルを保存しました。" if language == 'japanese' else f"Saved file to {directory}/{file_name}."
                 save_message = "ファイルを保存しました。" if language == 'japanese' else f"Saved file."
                 await send_websocket_message(websocket, save_message, "assistant")
 
+                # 処理終了時に"end"を送信
+                await send_websocket_message(websocket, "", "assistant", "end")
+
             # WebSocketで未設定のメッセージを受け取った場合
             else:
+                # 処理開始時に"start"を送信
+                await send_websocket_message(websocket, "", "assistant", "start")
+
                 error_message = "不正な送信が送られたようです。" if language == 'japanese' else "An invalid message was sent."
                 await send_websocket_message(websocket, error_message, "assistant")
+
+                # 処理終了時に"end"を送信
+                await send_websocket_message(websocket, "", "assistant", "end")
 
     except Exception as e:
         print("Errors:", e)
