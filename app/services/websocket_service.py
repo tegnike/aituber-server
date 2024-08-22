@@ -17,6 +17,6 @@ async def send_websocket_message(websocket, message, type, state=""):
             {"role": role, "text": message, "state": state}, ensure_ascii=False
         )
         print(f"Sending message: {json_data}")
-        await websocket.send({"type": "websocket.send", "text": json_data})
+        await websocket.send_text(json_data)
         await asyncio.sleep(0.01)  # 10ミリ秒の遅延を追加
         print("Send complete.")

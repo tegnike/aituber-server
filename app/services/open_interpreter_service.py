@@ -24,7 +24,7 @@ async def stream_open_interpreter(websocket):
                 json.dump([], f)
             print("Created conversation history.")
 
-        interpreter.model = "gpt-4o"
+        interpreter.llm.model = "gpt-4o"
         interpreter.auto_run = True
         # interpreter.debug_mode = True
         interpreter.system_message = f"""
