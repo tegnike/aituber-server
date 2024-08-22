@@ -25,8 +25,19 @@ class ConnectionManager:
             await connection.send_text(message)
 
     async def send_message_to_all(self, message: str, type: str):
+        closed_connections = []
         for websocket in self.active_connections:
-            await send_websocket_message(websocket, message, type)
+            try:
+                await send_websocket_message(websocket, "", "assistant", "start")
+                await send_websocket_message(websocket, message, type)
+                await send_websocket_message(websocket, "", "assistant", "end")
+            except RuntimeError:
+                # WebSocketが閉じられている場合、後で削除するためにリストに追加
+                closed_connections.append(websocket)
+
+        # 閉じられたコネクションを削除
+        for closed_websocket in closed_connections:
+            self.disconnect(closed_websocket)
 
 
 manager = ConnectionManager()
