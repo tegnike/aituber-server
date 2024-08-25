@@ -58,111 +58,120 @@ Your workspace is `./workspace` folder. If you make an output file, please put i
         prev_type = ""
 
         while True:
-            if message != "" and message != "\n":
-                await send_websocket_message(websocket, message, prev_type)
+            try:
+                if message != "" and message != "\n":
+                    await send_websocket_message(websocket, message, prev_type)
+                    await send_websocket_message(websocket, "", "assistant", "end")
 
-            message = ""
-            prev_type = ""
+                message = ""
+                prev_type = ""
 
-            # WebSocketでメッセージ受け取り待機
-            print("Waiting for user message...")
-            user_message = await websocket.receive_text()
-            print(f"Received user message: {user_message}")
+                # WebSocketでメッセージ受け取り待機
+                print("Waiting for user message...")
+                user_message = await websocket.receive_text()
+                print(f"Received user message: {user_message}")
 
-            parsed_data = json.loads(user_message)
-            message_content = parsed_data.get("content")
-            message_type = parsed_data.get("type")
+                parsed_data = json.loads(user_message)
+                message_content = parsed_data.get("content")
+                message_type = parsed_data.get("type")
 
-            # WebSocketでテキストメッセージを受け取った場合
-            # ex. {"type": "message", "text": "こんにちは"}
-            if message_type == "chat" and message_content != "":
-                if saved_file != "":
-                    user_message = saved_file + user_message
-                    saved_file = ""
+                # WebSocketでテキストメッセージを受け取った場合
+                # ex. {"type": "message", "text": "こんにちは"}
+                if message_type == "chat" and message_content != "":
+                    if saved_file != "":
+                        user_message = saved_file + user_message
+                        saved_file = ""
 
-                # 処理開始時に"start"を送信
-                await send_websocket_message(websocket, "", "assistant", "start")
+                    # 処理開始時に"start"を送信
+                    await send_websocket_message(websocket, "", "assistant", "start")
 
-                # OpenInterpreterの結果をstreamモードで取得、chunk毎に処理
-                is_source_code = False
-                for chunk in interpreter.chat(message_content, display=True, stream=True):
-                    current_type = chunk["type"]
-                    exculde_types = ["language", "active_line", "end_of_execution", "start_of_message", "end_of_message", "start_of_code", "end_of_code"]
-                    if current_type not in exculde_types:
-                        # message typeの場合は、文節に区切ってメッセージを送信
-                        if message and (current_type != prev_type or (len(message) > 15 and message[-1] in ['、', '。', '！', '？', '；', '…', '：'] or message[-1] == "\n")):
-                            if message != "":
-                                if "```" in message:
-                                    # Toggle is_source_code
-                                    is_source_code = not is_source_code
+                    # OpenInterpreterの結果をstreamモードで取得、chunk毎に処理
+                    is_source_code = False
+                    try:
+                        for chunk in interpreter.chat(message_content, display=True, stream=True):
+                            current_type = chunk["type"]
+                            exculde_types = ["language", "active_line", "end_of_execution", "start_of_message", "end_of_message", "start_of_code", "end_of_code"]
+                            if current_type not in exculde_types:
+                                # message typeの場合は、文節に区切ってメッセージを送信
+                                if message and (current_type != prev_type or (len(message) > 15 and message[-1] in ['、', '。', '！', '？', '；', '…', '：'] or message[-1] == "\n")):
+                                    if message != "":
+                                        if "```" in message:
+                                            # Toggle is_source_code
+                                            is_source_code = not is_source_code
+                                        else:
+                                            type_ = "code" if is_source_code else prev_type
+                                            await send_websocket_message(websocket, message, type_)
+                                    message = ""
+
+                                if current_type == "executing":
+                                    message += f"{chunk['content']}\n\n========================\nrunning...\n========================"
                                 else:
-                                    type_ = "code" if is_source_code else prev_type
-                                    await send_websocket_message(websocket, message, type_)
-                            message = ""
+                                    try:
+                                        if isinstance(chunk["content"], dict):
+                                            await send_websocket_message(websocket, chunk["content"]["content"], type_)
+                                        elif isinstance(chunk["content"], str):
+                                            message += chunk["content"]
+                                        else:
+                                            pass
+                                    except KeyError:
+                                        pass
+                                prev_type = current_type
+                    finally:
+                        # 処理終了時に必ず"end"を送信
+                        await send_websocket_message(websocket, "", "assistant", "end")
 
-                        if current_type == "executing":
-                            message += f"{chunk['content']}\n\n========================\nrunning...\n========================"
-                        else:
-                            try:
-                                if isinstance(chunk["content"], dict):
-                                    await send_websocket_message(websocket, chunk["content"]["content"], type_)
-                                elif isinstance(chunk["content"], str):
-                                    message += chunk["content"]
-                                else:
-                                    pass
-                            except KeyError:
-                                pass
-                        prev_type = current_type
+                # WebSocketでファイルを受け取った場合
+                # ex. {"type": "file", "fileName": "sample.txt", "fileData": "data:;base64,SGVsbG8sIHdvcmxkIQ=="}
+                elif message_type == "file":
+                    # JSONデータをパースして、ファイル名とファイルデータを取得
+                    file_name = parsed_data.get("fileName")
+                    base64_data = parsed_data.get("fileData").split(",")[1]
+                    file_data = base64.b64decode(base64_data)
 
-                # 処理終了時に"end"を送信
-                await send_websocket_message(websocket, "", "assistant", "end")
+                    # ファイルを保存するディレクトリを指定
+                    directory = "./workspace"
 
-            # WebSocketでファイルを受け取った場合
-            # ex. {"type": "file", "fileName": "sample.txt", "fileData": "data:;base64,SGVsbG8sIHdvcmxkIQ=="}
-            elif message_type == "file":
-                # JSONデータをパースして、ファイル名とファイルデータを取得
-                file_name = parsed_data.get("fileName")
-                base64_data = parsed_data.get("fileData").split(",")[1]
-                file_data = base64.b64decode(base64_data)
+                    # ディレクトリが存在しない場合、作成
+                    if not os.path.exists(directory):
+                        os.makedirs(directory)
 
-                # ファイルを保存するディレクトリを指定
-                directory = "./workspace"
+                    # ファイルのフルパスを作成
+                    file_path = os.path.join(directory, file_name)
 
-                # ディレクトリが存在しない場合、作成
-                if not os.path.exists(directory):
-                    os.makedirs(directory)
+                    # ファイルを保存
+                    with open(file_path, "wb") as f:
+                        f.write(file_data)
 
-                # ファイルのフルパスを作成
-                file_path = os.path.join(directory, file_name)
+                    # 処理開始時に"start"を送信
+                    await send_websocket_message(websocket, "", "assistant", "start")
 
-                # ファイルを保存
-                with open(file_path, "wb") as f:
-                    f.write(file_data)
+                    # メッセージを追加
+                    saved_file = f"{directory}/{file_name}にファイルを保存しました。" if language == 'japanese' else f"Saved file to {directory}/{file_name}."
+                    save_message = "ファイルを保存しました。" if language == 'japanese' else f"Saved file."
+                    await send_websocket_message(websocket, save_message, "assistant")
 
-                # 処理開始時に"start"を送信
-                await send_websocket_message(websocket, "", "assistant", "start")
+                    # 処理終了時に"end"を送信
+                    await send_websocket_message(websocket, "", "assistant", "end")
 
-                # メッセージを追加
-                saved_file = f"{directory}/{file_name}にファイルを保存しました。" if language == 'japanese' else f"Saved file to {directory}/{file_name}."
-                save_message = "ファイルを保存しました。" if language == 'japanese' else f"Saved file."
-                await send_websocket_message(websocket, save_message, "assistant")
+                # WebSocketで未設定のメッセージを受け取った場合
+                else:
+                    # 処理開始時に"start"を送信
+                    await send_websocket_message(websocket, "", "assistant", "start")
 
-                # 処理終了時に"end"を送信
-                await send_websocket_message(websocket, "", "assistant", "end")
+                    error_message = "不正な送信が送られたようです。" if language == 'japanese' else "An invalid message was sent."
+                    await send_websocket_message(websocket, error_message, "assistant")
 
-            # WebSocketで未設定のメッセージを受け取った場合
-            else:
-                # 処理開始時に"start"を送信
-                await send_websocket_message(websocket, "", "assistant", "start")
+                    # 処理終了時に"end"を送信
+                    await send_websocket_message(websocket, "", "assistant", "end")
 
-                error_message = "不正な送信が送られたようです。" if language == 'japanese' else "An invalid message was sent."
-                await send_websocket_message(websocket, error_message, "assistant")
-
-                # 処理終了時に"end"を送信
+            except Exception as e:
+                print(f"Error in message processing: {e}")
+                traceback.print_exc()
+                await send_websocket_message(websocket, "エラーが発生しました。", "assistant")
                 await send_websocket_message(websocket, "", "assistant", "end")
 
     except Exception as e:
-        print("Errors:", e)
+        print(f"Fatal error: {e}")
         traceback.print_exc()
-
+    finally:
         await websocket.close()
