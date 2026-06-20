@@ -1,43 +1,9 @@
-from typing import List
 from fastapi import APIRouter, WebSocket, Request, WebSocketDisconnect
-from ..services.open_interpreter_service import stream_open_interpreter
-from ..services.websocket_service import send_websocket_message
+from app.connection_manager import ConnectionManager
+from app.protocol import create_server_message_event
+from ..services.websocket_session_service import stream_websocket_session
 
 router = APIRouter()
-
-
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: List[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
-
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
-
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            await connection.send_text(message)
-
-    async def send_message_to_all(self, message: str, type: str):
-        closed_connections = []
-        for websocket in self.active_connections:
-            try:
-                await send_websocket_message(websocket, "", "assistant", "start")
-                await send_websocket_message(websocket, message, type)
-                await send_websocket_message(websocket, "", "assistant", "end")
-            except RuntimeError:
-                # WebSocketが閉じられている場合、後で削除するためにリストに追加
-                closed_connections.append(websocket)
-
-        # 閉じられたコネクションを削除
-        for closed_websocket in closed_connections:
-            self.disconnect(closed_websocket)
 
 
 manager = ConnectionManager()
@@ -47,7 +13,7 @@ manager = ConnectionManager()
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
-        await stream_open_interpreter(websocket)
+        await stream_websocket_session(websocket, manager)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
@@ -55,8 +21,9 @@ async def websocket_endpoint(websocket: WebSocket):
 @router.post("/send_message")
 async def send_message(request: Request):
     message = await request.json()
-    await manager.send_message_to_all(message["message"], message.get("type", "message"))
-    return {"status": "ok", "message": message["message"]}
+    event = create_server_message_event(message["message"], message.get("type", "message"))
+    await manager.send_event_to_all(event)
+    return {"status": "ok", "message": message["message"], "eventId": event.id}
 
 
 @router.get("/")
